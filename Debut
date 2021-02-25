@@ -1,0 +1,41 @@
+import numpy as np
+
+#Filtre noir et blanc
+
+M=np.array([[20,10,20,34,55,32,15,70,89],[19,50,40,80,10,15,14,40,67],[12,170,220,223,224,215,212,189,1],[43,129,90,25,79,58,16,149,78],[44,223,24,11,21,23,22,199,56],[14,187,90,5,6,78,73,190,34],[31,139,45,56,65,94,10,167,16],[42,215,43,90,78,90,11,211,111],[67,190,199,198,195,245,216,218,18]], dtype=int)
+L,C=M.shape
+M=M.reshape(M.size)
+for i in range(M.size):
+    if M[i]>127:
+        M[i]=255
+    else :
+        M[i]=0
+M=M.reshape(L,C)
+
+
+#barycentre
+
+X,Y=0,0
+for i in range(L):
+    for j in range(C):
+        X+=M[i,j]*i
+        Y+=M[i,j]*j
+X=int(round(X/np.sum(M)))
+Y=int(round(Y/np.sum(M)))
+M[X,Y]=1
+
+
+#centrage
+
+
+dx=L//2-X
+dy=C//2-Y
+if X!=L and Y!=C :
+    for i in range(L):
+        for j in range(C):
+            if M[i,j]!=0:
+                M[i+dx,j+dy],M[i,j]=M[i,j],0
+
+#mise à l'échelle
+
+N=np.zeros
