@@ -1,0 +1,36 @@
+import matplotlib.pyplot as plt
+import numpy as np
+
+X,Y,nb=0,0,0
+N=plt.imread("chat.jpg", "uint8")
+M=N.copy()
+L,C,P=np.shape(N)
+for i in range(L):
+    for j in range(C):
+        if np.mean(M[i,j])>127:
+            M[i,j]=[255,255,255]
+            X+=i
+            Y+=j
+            nb+=1
+        else :
+            M[i,j]=[0,0,0]
+X=round(X/nb)
+Y=round(Y/nb)
+dx=L//2-X
+dy=C//2-Y
+if X!=L and Y!=C :
+    for i in range(dx,L-abs(dx)):
+        for j in range(dy,C-abs(dy)):
+            if (M[i,j]!=[0,0,0]).all():
+                M[i+dx,j+dy],M[i,j]=M[i,j],[0,0,0]
+def rotation(angle):
+    return np.array([np.cos(angle),-np.sin(angle),np.sin(angle),np.cos(angle)])
+ROT=rotation(45)
+ROT=np.reshape(ROT,(2,2))
+
+
+plt.figure()
+plt.imshow(M, interpolation='nearest')
+plt.axis("off")
+plt.show()
+
