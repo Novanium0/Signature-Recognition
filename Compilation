@@ -1,21 +1,22 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from PIL import Image
 
 X,Y,nb=0,0,0    #ces variables vont nous servir pour calculer le barycentre
 
 N=plt.imread("chat.jpg", "uint8") #on lit l'image
 
-M=N.copy()     #on en fait une copie sinon on ne peut pas la modifier, l'image est en lecture seule
+A=N.copy()     #on en fait une copie sinon on ne peut pas la modifier, l'image est en lecture seule
 
-L,C,P=np.shape(N)   #on détermine le combre de lignes "L", de colonnes "C" et d'éléments dans un pixel "P"
+L,C,P=np.shape(A)   #on détermine le combre de lignes "L", de colonnes "C" et d'éléments dans un pixel "P"
 
 for i in range(L):
 
     for j in range(C):   #on parcours tous les pixels
 
-        if np.mean(M[i,j])<127:    #si la moyenne du triplet est "sombre"
+        if np.mean(A[i,j])<150:    #si la moyenne du triplet est "sombre"
 
-            M[i,j]=[0,0,0]   # on met chaque composante à 0
+            A[i,j]=[0,0,0]   # on met chaque composante à 0
 
             X+=i
 
@@ -25,7 +26,7 @@ for i in range(L):
 
         else :
 
-            M[i,j]=[255,255,255] #si le pixel est "clair" on met chaque composante à 255
+            A[i,j]=[255,255,255] #si le pixel est "clair" on met chaque composante à 255
 
 X=round(X/nb)
 
@@ -41,20 +42,86 @@ if X!=L and Y!=C : #si le centre de gravité est déja le centre de l'image, onn
 
         for j in range(dy,C-abs(dy)): #ici le range est particulier pour pas avoir de dépassement d'indice et on prend la valeur absolue car dx et dx sont des valeurs algébriques
 
-            if (M[i,j]!=[255,255,255]).all():  #si le pixel est déjà blanc, pas besoin de le déplacer, on ne veut déplacer que les pixels noirs
+            if (A[i,j]!=[255,255,255]).all():  #si le pixel est déjà blanc, pas besoin de le déplacer, on ne veut déplacer que les pixels noirs
 
-                M[i+dx,j+dy],M[i,j]=M[i,j],[255,255,255] #on fait une double affectation, le pixels i,j prend sa nouvelle position et est remplacé par un pixel blanc
-
-def rotation(M,angle):
-    ROT=np.array([np.cos(angle),-np.sin(angle),np.sin(angle),np.cos(angle)]) #on définit la matrice de rotation
-
-    ROT=np.reshape(ROT,(2,2)) #je n'arrivais pas à la définir en 2x2 donc je la définis en 1x4 et je la reshape en 2x2
-
-    return np.dot(M,ROT) #cette fonction retourne le produit M*ROT
+                A[i+dx,j+dy],A[i,j]=A[i,j],[255,255,255] #on fait une double affectation, le pixels i,j prend sa nouvelle position et est remplacé par un pixel blanc
 
 
+X,Y,nb=0,0,0
+M=plt.imread("chat2.jpg", "uint8")
+B=M.copy()
+L,C,P=np.shape(B)   #on détermine le combre de lignes "L", de colonnes "C" et d'éléments dans un pixel "P"
+
+for i in range(L):
+
+    for j in range(C):   #on parcours tous les pixels
+
+        if np.mean(B[i,j])<150:    #si la moyenne du triplet est "sombre"
+
+            B[i,j]=[0,0,0]   # on met chaque composante à 0
+
+            X+=i
+
+            Y+=j       #on relève les coordonnées du pixel en question
+
+            nb+=1      #on compte le nombre de pixel noirs
+
+        else :
+
+            B[i,j]=[255,255,255] #si le pixel est "clair" on met chaque composante à 255
+
+X=round(X/nb)
+
+Y=round(Y/nb)   #X et Y représentent les coordonnées du pixel du centre de gravité
+
+dx=L//2-X
+
+dy=C//2-Y   #on calcul de combien on doit décaler notre image
+
+if X!=L and Y!=C : #si le centre de gravité est déja le centre de l'image, onn ne fait rien
+
+    for i in range(dx,L-abs(dx)):
+
+        for j in range(dy,C-abs(dy)): #ici le range est particulier pour pas avoir de dépassement d'indice et on prend la valeur absolue car dx et dx sont des valeurs algébriques
+
+            if (B[i,j]!=[255,255,255]).all():  #si le pixel est déjà blanc, pas besoin de le déplacer, on ne veut déplacer que les pixels noirs
+
+                B[i+dx,j+dy],B[i,j]=B[i,j],[255,255,255] #on fait une double affectation, le pixels i,j prend sa nouvelle position et est remplacé par un pixel blanc
+
+
+def dist_max(Q):
+    D0,D1=0,0
+    a,b=0,0
+    for i in range(L):
+        for j in range(C):
+            if (Q[i,j]==[0,0,0]).any():
+                D1=np.sqrt((i-X)**2+(j-Y)**2)
+                D0=max(D1,D0)
+                if D0==D1:
+                    a,b=i,j
+    return a,b
+
+xm,ym=L//2,C//2
+xa,ya=dist_max(A)
+xb,yb=dist_max(B)
+u,v=[xa-xm,ya-ym],[xb-xm,yb-ym]
+
+def angle(u,v):
+    scalaire = np.dot(u,v)
+    norme_u = np.linalg.norm(u)
+    norme_v = np.linalg.norm(v)
+    angle_mesure = (np.arccos((scalaire/(norme_u*norme_v))))/(np.pi/180)
+    return angle_mesure
+
+deg=angle(u,v)
+
+im = Image.open("chat2.jpg")
+im = im.rotate(deg)
+im.show()
+
+'''
 plt.figure()
-plt.imshow(M, interpolation='nearest')
+plt.imshow(B, interpolation='nearest')
 plt.axis("off")
 plt.show() #on affiche l'image
-
+'''
